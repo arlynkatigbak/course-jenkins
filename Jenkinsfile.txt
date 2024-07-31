@@ -32,5 +32,19 @@ pipeline {
                 sh 'mvn -B -DskipTests clean package'
             }
         }
+
+        stage('Deploy') {
+            steps {
+                sh 'set -ex'
+                sh 'scp -o StrictHostKeyChecking=no -P 2201 target/jenkins-0.0.1-SNAPSHOT.jar localhost:'
+                sh '''
+                    ssh -o StrictHostKeyChecking=no localhost -p 2201 '
+                    pkill -9 java
+                    nohup java -jar -Djava.io.tmpdir=/home/labsuser/.tmp -Dserver.port=8081 jenkins-0.0.1-SNAPSHOT.jar start >> jenkins-lab.log 2>&1 &
+                    '
+                '''                  
+            }
+        }
+
     }
 }
