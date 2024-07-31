@@ -45,6 +45,14 @@ pipeline {
                 '''                  
             }
         }
+        
+        stage('Notify Engineering Team') {
+            steps {
+                slackSend(channel: "#alert-jenkins", message: 'Jenkins pipeline runs succesfully. Please check sonarcloud & snyk dashboard for any issue')
+            }
+        }
+
 
     }
+    
 }
