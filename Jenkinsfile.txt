@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Code checkout from Git') {
+            steps {
+                git branch:'master', url:'https://github.com/arlynkatigbak/course-jenkins.git'
+            }
+        }
+        
+        stage('Code Quality Check') {
+            steps {
+                withSonarQubeEnv(installationName : 'my-sonarcloud', credentialsId : 'sonar-token') {
+                    sh 'mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=arlynkatigbak -Dsonar.projectKey=arlynkatigbak_course-jenkins'
+                }
+            }
+        }
+        
+        stage('Code Security Check') {
+            steps {
+                sh "chmod a+x mvnw"
+                snykSecurity(
+                    snykInstallation: 'my-snyk', 
+                    snykTokenId:'snyk-token',
+                    failOnIssues: false
+                )
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
+        }
+    }
+}
